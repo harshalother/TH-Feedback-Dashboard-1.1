@@ -1,0 +1,22 @@
+/*
+  Login Component Styles
+
+  Most styling is handled via Tailwind classes in the template
+  This file is for any custom styles specific to the login component
+*/
+
+/* Smooth fade-in animation for the login card */
+:host {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

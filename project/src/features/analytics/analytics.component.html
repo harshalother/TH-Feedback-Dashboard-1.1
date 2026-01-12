@@ -1,0 +1,306 @@
+<!--
+  Analytics Component Template
+
+  Structure:
+  1. Page header with title
+  2. Tab navigation
+  3. Tab content panels
+     - Channel Performance (Bar Chart)
+     - Store Deep Dive (Searchable Table)
+     - Heatmap (CSS Grid)
+-->
+<div class="space-y-6">
+
+  <!-- Page Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary mb-2">
+          Analytics & Insights
+        </h1>
+        <p class="text-secondary/70">
+          Track performance across channels and locations
+        </p>
+      </div>
+      <!-- Key Metrics -->
+      <div class="flex items-center space-x-6">
+        <div class="text-center">
+          <p class="text-2xl font-bold text-primary">{{ avgChannelSentiment() }}</p>
+          <p class="text-xs text-secondary/60">Avg Sentiment</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-primary">{{ avgStoreNSS() }}</p>
+          <p class="text-xs text-secondary/60">Avg NSS</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="bg-white rounded-lg shadow-sm">
+    <div class="flex border-b border-gray-200">
+      <!-- Channel Performance Tab -->
+      <button
+        (click)="switchTab('channel')"
+        [class.border-b-2]="activeTab() === 'channel'"
+        [class.border-primary]="activeTab() === 'channel'"
+        [class.text-primary]="activeTab() === 'channel'"
+        [class.text-secondary/60]="activeTab() !== 'channel'"
+        class="flex-1 px-6 py-4 font-medium transition-colors hover:text-primary"
+      >
+        📊 Channel Performance
+      </button>
+
+      <!-- Store Deep Dive Tab -->
+      <button
+        (click)="switchTab('stores')"
+        [class.border-b-2]="activeTab() === 'stores'"
+        [class.border-primary]="activeTab() === 'stores'"
+        [class.text-primary]="activeTab() === 'stores'"
+        [class.text-secondary/60]="activeTab() !== 'stores'"
+        class="flex-1 px-6 py-4 font-medium transition-colors hover:text-primary"
+      >
+        🏪 Store Deep Dive
+      </button>
+
+      <!-- Heatmap Tab -->
+      <button
+        (click)="switchTab('heatmap')"
+        [class.border-b-2]="activeTab() === 'heatmap'"
+        [class.border-primary]="activeTab() === 'heatmap'"
+        [class.text-primary]="activeTab() === 'heatmap'"
+        [class.text-secondary/60]="activeTab() !== 'heatmap'"
+        class="flex-1 px-6 py-4 font-medium transition-colors hover:text-primary"
+      >
+        🔥 Heatmap
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-6">
+
+      <!-- Tab 1: Channel Performance -->
+      @if (activeTab() === 'channel') {
+        @if (isLoadingChannelPerf()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="text-center">
+              <div class="inline-block animate-pulse">
+                <div class="w-12 h-12 bg-secondary/20 rounded-lg mb-3"></div>
+              </div>
+              <p class="text-secondary/70">Loading channel data...</p>
+            </div>
+          </div>
+        } @else {
+          <div class="space-y-6">
+            <!-- Description -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p class="text-sm text-secondary">
+                Comparing Speed and Sentiment metrics across delivery channels. Higher scores indicate better performance.
+              </p>
+            </div>
+
+            <!-- Grouped Bar Chart -->
+            <div class="space-y-4">
+              @for (item of channelPerfData(); track item.channel) {
+                <div class="space-y-2">
+                  <!-- Channel Label -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-2xl">{{ getChannelIcon(item.channel) }}</span>
+                      <span class="font-semibold text-secondary capitalize">{{ item.channel }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Bar Chart Pair -->
+                  <div class="flex items-end space-x-4 h-40 bg-surface rounded-lg p-4">
+                    <!-- Speed Bar -->
+                    <div class="flex-1 flex flex-col items-center">
+                      <div class="w-full bg-gradient-to-t from-primary/30 to-primary rounded-t-lg flex items-end justify-center h-full"
+                           [style.height]="getBarHeight(item.speed)">
+                        <span class="text-sm font-bold text-white mb-2">{{ item.speed }}</span>
+                      </div>
+                      <span class="text-xs text-secondary/60 mt-2 text-center">Speed</span>
+                    </div>
+
+                    <!-- Sentiment Bar -->
+                    <div class="flex-1 flex flex-col items-center">
+                      <div class="w-full bg-gradient-to-t from-green-300 to-green-500 rounded-t-lg flex items-end justify-center h-full"
+                           [style.height]="getBarHeight(item.sentiment)">
+                        <span class="text-sm font-bold text-white mb-2">{{ item.sentiment }}</span>
+                      </div>
+                      <span class="text-xs text-secondary/60 mt-2 text-center">Sentiment</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Legend -->
+            <div class="flex items-center justify-center space-x-6 text-sm">
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 rounded-sm bg-gradient-to-r from-primary/30 to-primary"></div>
+                <span class="text-secondary">Speed (0-100)</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 rounded-sm bg-gradient-to-r from-green-300 to-green-500"></div>
+                <span class="text-secondary">Sentiment (0-100)</span>
+              </div>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Tab 2: Store Deep Dive -->
+      @if (activeTab() === 'stores') {
+        @if (isLoadingStores()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="text-center">
+              <div class="inline-block animate-pulse">
+                <div class="w-12 h-12 bg-secondary/20 rounded-lg mb-3"></div>
+              </div>
+              <p class="text-secondary/70">Loading store data...</p>
+            </div>
+          </div>
+        } @else {
+          <div class="space-y-4">
+            <!-- Search Bar -->
+            <div class="relative">
+              <input
+                type="text"
+                placeholder="Search stores..."
+                [ngModel]="storeSearchQuery()"
+                (ngModelChange)="storeSearchQuery.set($event)"
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              />
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                🔍
+              </span>
+            </div>
+
+            <!-- Stores Table -->
+            @if (filteredStores().length > 0) {
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-surface border-b border-gray-200">
+                    <tr>
+                      <th class="text-left py-3 px-4 font-semibold text-secondary text-sm">Store Name</th>
+                      <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">Channel</th>
+                      <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">NSS Score</th>
+                      <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">Review Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (store of filteredStores(); track store.id) {
+                      <tr class="border-b border-gray-100 hover:bg-surface transition-colors">
+                        <td class="py-3 px-4 text-sm font-medium text-secondary">{{ store.name }}</td>
+                        <td class="py-3 px-4 text-center text-2xl">{{ getChannelIcon(store.channel) }}</td>
+                        <td class="py-3 px-4 text-center">
+                          <span
+                            class="inline-block px-3 py-1 rounded-full text-sm font-semibold"
+                            [ngClass]="getNSSBadgeColor(store.nss)"
+                          >
+                            {{ store.nss }}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-center text-sm text-secondary">{{ store.volume }} reviews</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="flex items-center justify-center py-8">
+                <div class="text-center">
+                  <p class="text-secondary/70">No stores found matching your search</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Tab 3: Heatmap -->
+      @if (activeTab() === 'heatmap') {
+        @if (isLoadingHeatmap()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="text-center">
+              <div class="inline-block animate-pulse">
+                <div class="w-12 h-12 bg-secondary/20 rounded-lg mb-3"></div>
+              </div>
+              <p class="text-secondary/70">Loading heatmap data...</p>
+            </div>
+          </div>
+        } @else {
+          <div class="space-y-6">
+            <!-- Description -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p class="text-sm text-secondary">
+                Sentiment score distribution across days and time slots. Green = High positive sentiment, Yellow = Neutral, Red = Low sentiment.
+              </p>
+            </div>
+
+            <!--
+              Heatmap Grid
+
+              CSS Grid Structure:
+              - 8 columns (Time Slot labels + 4 time slots)
+              - 8 rows (Day headers + 7 days)
+              - Cells dynamically colored based on sentiment score
+              - Header rows and columns are frozen with bold text
+            -->
+            <div class="overflow-x-auto">
+              <div
+                class="inline-grid gap-1 p-4 bg-surface rounded-lg"
+                [style.gridTemplateColumns]="'120px repeat(4, 1fr)'"
+              >
+                <!-- Header Row: Day Labels -->
+                <div class="font-semibold text-secondary text-sm py-2 px-3 text-center border-b-2 border-r-2 border-gray-300"></div>
+                @for (timeSlot of heatmapTimeSlots(); track timeSlot) {
+                  <div class="font-semibold text-secondary text-sm py-2 px-3 text-center border-b-2 border-gray-300">
+                    {{ timeSlot }}
+                  </div>
+                }
+
+                <!-- Data Rows: Days and Sentiment Cells -->
+                @for (day of heatmapDays(); track day) {
+                  <!-- Day Label -->
+                  <div class="font-semibold text-secondary text-sm py-2 px-3 text-center border-r-2 border-gray-300 bg-white">
+                    {{ day }}
+                  </div>
+
+                  <!-- Sentiment Score Cells -->
+                  @for (timeSlot of heatmapTimeSlots(); track timeSlot) {
+                    <div
+                      class="w-24 h-16 rounded flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-md"
+                      [ngClass]="getHeatmapCellColor(getHeatmapCellData(day, timeSlot))"
+                      [title]="'Day: ' + day + ', Time: ' + timeSlot + ', Score: ' + getHeatmapCellData(day, timeSlot)"
+                    >
+                      <span class="text-white font-bold text-lg">{{ getHeatmapCellData(day, timeSlot) }}</span>
+                      <span class="text-white text-xs opacity-75">Score</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Color Legend -->
+            <div class="flex items-center justify-center space-x-6 text-sm">
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-sm bg-green-500"></div>
+                <span class="text-secondary">High (75+)</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-sm bg-yellow-500"></div>
+                <span class="text-secondary">Neutral (40-74)</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-sm bg-red-500"></div>
+                <span class="text-secondary">Low (0-39)</span>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

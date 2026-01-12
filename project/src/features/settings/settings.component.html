@@ -1,0 +1,198 @@
+<!--
+  Settings Component Template
+
+  Structure:
+  1. Page header with title
+  2. Success/Error message banner
+  3. Section 1: Feature Toggles
+  4. Section 2: Auto-Reply Rules
+  5. Section 3: Action buttons
+-->
+<div class="space-y-6">
+
+  <!-- Page Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary mb-2">
+          Settings
+        </h1>
+        <p class="text-secondary/70">
+          Configure your application preferences and automation rules
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Message -->
+  @if (feedbackMessage()) {
+    <div
+      class="rounded-lg p-4 border"
+      [ngClass]="{
+        'bg-green-50 border-green-200': feedbackType() === 'success',
+        'bg-red-50 border-red-200': feedbackType() === 'error'
+      }"
+    >
+      <p
+        class="text-sm font-medium"
+        [ngClass]="{
+          'text-green-800': feedbackType() === 'success',
+          'text-red-800': feedbackType() === 'error'
+        }"
+      >
+        {{ feedbackMessage() }}
+      </p>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-16">
+      <div class="text-center">
+        <div class="inline-block animate-pulse">
+          <div class="w-12 h-12 bg-secondary/20 rounded-lg mb-3"></div>
+        </div>
+        <p class="text-secondary/70">Loading settings...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Settings Form Content -->
+  @else {
+    <!-- Section 1: Feature Toggles -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-secondary mb-4">
+        Feature Toggles
+      </h2>
+      <p class="text-secondary/70 text-sm mb-6">
+        Enable or disable key application features
+      </p>
+
+      <div class="space-y-4">
+        <!-- Sentiment Analysis Toggle -->
+        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div>
+            <h3 class="font-medium text-secondary">Sentiment Analysis</h3>
+            <p class="text-sm text-secondary/70 mt-1">
+              Automatically categorize feedback as positive, negative, or neutral
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="sentimentAnalysisEnabled()"
+              (change)="toggleSentimentAnalysis()"
+              class="sr-only peer"
+            />
+            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+          </label>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div>
+            <h3 class="font-medium text-secondary">Dark Mode</h3>
+            <p class="text-sm text-secondary/70 mt-1">
+              Switch to a dark color scheme for reduced eye strain
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="darkModeEnabled()"
+              (change)="toggleDarkMode()"
+              class="sr-only peer"
+            />
+            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Auto-Reply Rules -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-secondary mb-4">
+        Auto-Reply Rules
+      </h2>
+      <p class="text-secondary/70 text-sm mb-6">
+        Configure automatic responses for different feedback types
+      </p>
+
+      <div class="space-y-5">
+        @for (rule of autoReplyRules(); track rule.id) {
+          <div class="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <!-- Rule Header -->
+            <div class="flex items-center gap-3 mb-4">
+              <span
+                class="inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize"
+                [ngClass]="getTriggerBadgeClass(rule.trigger)"
+              >
+                {{ getTriggerLabel(rule.trigger) }}
+              </span>
+            </div>
+
+            <!-- Rule Message Input -->
+            <div>
+              <label class="block text-sm font-medium text-secondary mb-2">
+                Auto-Reply Message
+              </label>
+              <textarea
+                [value]="rule.message"
+                (input)="updateRuleMessage(rule.id, $any($event.target).value)"
+                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all resize-vertical min-h-24"
+                placeholder="Enter the auto-reply message that will be sent..."
+              ></textarea>
+              <p class="text-xs text-secondary/60 mt-2">
+                {{ rule.message.length }} characters
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Section 3: Action Buttons -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          @if (hasChanges()) {
+            <p class="text-sm text-secondary/70">
+              You have unsaved changes
+            </p>
+          }
+        </div>
+        <div class="flex gap-3">
+          <!-- Reset Button -->
+          <button
+            (click)="resetChanges()"
+            [disabled]="!hasChanges() || isSaving()"
+            class="px-6 py-3 border border-gray-200 text-secondary font-medium rounded-lg
+                   hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                   transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Discard Changes
+          </button>
+
+          <!-- Save Button -->
+          <button
+            (click)="saveSettings()"
+            [disabled]="!hasChanges() || isSaving()"
+            class="px-6 py-3 bg-primary text-white font-medium rounded-lg
+                   hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                   transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            @if (isSaving()) {
+              <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            } @else {
+              <span>Save Changes</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

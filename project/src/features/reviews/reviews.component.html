@@ -1,0 +1,327 @@
+<!--
+  Reviews Feed Template
+
+  Structure:
+  1. Header with title and stats
+  2. Filter bar (search, status, channel)
+  3. Data grid with expandable rows
+  4. Expanded section with full text and reply form
+-->
+<div class="space-y-6">
+
+  <!-- Page Header -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary mb-2">
+          All Reviews
+        </h1>
+        <p class="text-secondary/70">
+          Manage customer feedback across all channels
+        </p>
+      </div>
+      <!-- Quick Stats -->
+      <div class="flex items-center space-x-6">
+        <div class="text-center">
+          <p class="text-2xl font-bold text-secondary">{{ totalReviews() }}</p>
+          <p class="text-xs text-secondary/60">Total</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-yellow-600">{{ pendingCount() }}</p>
+          <p class="text-xs text-secondary/60">Pending</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="bg-white rounded-lg shadow-sm p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
+
+      <!-- Search Input -->
+      <div class="flex-1 max-w-md">
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Search reviews or stores..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          />
+          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="flex items-center space-x-2">
+        <label for="status-filter" class="text-sm font-medium text-secondary whitespace-nowrap">
+          Status:
+        </label>
+        <select
+          id="status-filter"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event)"
+          class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="replied">Replied</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+
+      <!-- Channel Filter (Icon Buttons) -->
+      <div class="flex items-center space-x-2">
+        <span class="text-sm font-medium text-secondary whitespace-nowrap">Channel:</span>
+        <div class="flex space-x-2">
+          <!-- All Channels -->
+          <button
+            (click)="selectedChannel.set('all')"
+            [class.bg-primary]="selectedChannel() === 'all'"
+            [class.text-white]="selectedChannel() === 'all'"
+            [class.bg-gray-100]="selectedChannel() !== 'all'"
+            [class.text-secondary]="selectedChannel() !== 'all'"
+            class="px-3 py-2 rounded-lg font-medium text-sm transition-all hover:opacity-80"
+          >
+            All
+          </button>
+          <!-- Swiggy -->
+          <button
+            (click)="selectedChannel.set('swiggy')"
+            [class.bg-primary]="selectedChannel() === 'swiggy'"
+            [class.text-white]="selectedChannel() === 'swiggy'"
+            [class.bg-gray-100]="selectedChannel() !== 'swiggy'"
+            class="px-3 py-2 rounded-lg transition-all hover:opacity-80"
+            title="Swiggy"
+          >
+            🍔
+          </button>
+          <!-- Zomato -->
+          <button
+            (click)="selectedChannel.set('zomato')"
+            [class.bg-primary]="selectedChannel() === 'zomato'"
+            [class.text-white]="selectedChannel() === 'zomato'"
+            [class.bg-gray-100]="selectedChannel() !== 'zomato'"
+            class="px-3 py-2 rounded-lg transition-all hover:opacity-80"
+            title="Zomato"
+          >
+            🍕
+          </button>
+          <!-- In-Store -->
+          <button
+            (click)="selectedChannel.set('instore')"
+            [class.bg-primary]="selectedChannel() === 'instore'"
+            [class.text-white]="selectedChannel() === 'instore'"
+            [class.bg-gray-100]="selectedChannel() !== 'instore'"
+            class="px-3 py-2 rounded-lg transition-all hover:opacity-80"
+            title="In-Store"
+          >
+            🏪
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Data Grid -->
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-12">
+        <div class="text-center">
+          <div class="inline-block animate-pulse">
+            <div class="w-12 h-12 bg-secondary/20 rounded-lg mb-3"></div>
+          </div>
+          <p class="text-secondary/70">Loading reviews...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Reviews Table -->
+    @else if (filteredReviews().length > 0) {
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-surface border-b border-gray-200">
+            <tr>
+              <th class="text-left py-3 px-4 font-semibold text-secondary text-sm">Date</th>
+              <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">Channel</th>
+              <th class="text-left py-3 px-4 font-semibold text-secondary text-sm">Store</th>
+              <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">Rating</th>
+              <th class="text-left py-3 px-4 font-semibold text-secondary text-sm">Review Text</th>
+              <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">Sentiment</th>
+              <th class="text-center py-3 px-4 font-semibold text-secondary text-sm">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!--
+              Review Row with Expansion Panel
+
+              How the expansion works:
+              1. Each review renders as a table row with a click handler
+              2. Clicking the row calls toggleExpansion(review.id)
+              3. If the row is already expanded, it collapses; otherwise it expands
+              4. The expanded section is a separate row that appears/disappears based on isExpanded()
+              5. Only one row can be expanded at a time (managed by expandedReviewId signal)
+
+              Visual feedback:
+              - Cursor changes to pointer on hover
+              - Background color changes on hover
+              - Expanded rows have a border highlight
+            -->
+            @for (review of filteredReviews(); track review.id) {
+              <!-- Main Review Row (Clickable) -->
+              <tr
+                (click)="toggleExpansion(review.id)"
+                class="border-b border-gray-100 hover:bg-surface transition-colors cursor-pointer"
+                [class.bg-blue-50]="isExpanded(review.id)"
+              >
+                <!-- Date -->
+                <td class="py-3 px-4 text-sm text-secondary">
+                  {{ review.date }}
+                </td>
+
+                <!-- Channel Icon -->
+                <td class="py-3 px-4 text-center text-2xl">
+                  {{ getChannelIcon(review.source) }}
+                </td>
+
+                <!-- Store Name -->
+                <td class="py-3 px-4 text-sm text-secondary font-medium">
+                  {{ review.store }}
+                </td>
+
+                <!-- Star Rating -->
+                <td class="py-3 px-4 text-center">
+                  <span class="text-sm">{{ getStarRating(review.rating) }}</span>
+                </td>
+
+                <!-- Review Text (Truncated) -->
+                <td class="py-3 px-4 text-sm text-secondary/80">
+                  {{ truncateText(review.text) }}
+                </td>
+
+                <!-- Sentiment Indicator -->
+                <td class="py-3 px-4 text-center">
+                  <span class="text-sm font-semibold" [ngClass]="getSentimentClass(review.sentiment)">
+                    {{ review.sentiment }}
+                  </span>
+                </td>
+
+                <!-- Status Badge -->
+                <td class="py-3 px-4 text-center">
+                  <span
+                    class="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+                    [ngClass]="getStatusBadgeClass(review.status)"
+                  >
+                    {{ review.status }}
+                  </span>
+                </td>
+              </tr>
+
+              <!--
+                Expanded Section (Reply Interface)
+
+                This row only renders when isExpanded(review.id) is true
+                It spans all columns using colspan
+                Contains:
+                1. Full review text
+                2. Reply textarea
+                3. Send button
+                4. Success/error messages
+
+                Why separate row:
+                - Maintains table structure
+                - Easier to style and animate
+                - Clean separation of concerns
+              -->
+              @if (isExpanded(review.id)) {
+                <tr class="bg-blue-50 border-b border-blue-200">
+                  <td colspan="7" class="py-4 px-4">
+                    <div class="space-y-4">
+
+                      <!-- Full Review Text -->
+                      <div class="bg-white rounded-lg p-4 border border-blue-200">
+                        <h3 class="text-sm font-semibold text-secondary mb-2">Full Review:</h3>
+                        <p class="text-secondary/80">{{ review.text }}</p>
+                      </div>
+
+                      <!-- Reply Form -->
+                      <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <h3 class="text-sm font-semibold text-secondary mb-3">Send Reply:</h3>
+
+                        <!-- Success/Error Message -->
+                        @if (replyMessage()) {
+                          <div
+                            class="mb-3 p-3 rounded-lg text-sm"
+                            [ngClass]="replyMessage().includes('success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                          >
+                            {{ replyMessage() }}
+                          </div>
+                        }
+
+                        <!-- Reply Textarea -->
+                        <textarea
+                          [ngModel]="replyText()"
+                          (ngModelChange)="replyText.set($event)"
+                          rows="3"
+                          placeholder="Type your reply message here..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                          [disabled]="isSubmittingReply()"
+                        ></textarea>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center justify-end space-x-3 mt-3">
+                          <!-- Cancel Button -->
+                          <button
+                            (click)="toggleExpansion(review.id); $event.stopPropagation()"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-secondary hover:bg-gray-50 transition-all"
+                            [disabled]="isSubmittingReply()"
+                          >
+                            Cancel
+                          </button>
+
+                          <!-- Send Button -->
+                          <button
+                            (click)="submitReply(review.id); $event.stopPropagation()"
+                            [disabled]="!replyText().trim() || isSubmittingReply()"
+                            class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                          >
+                            @if (isSubmittingReply()) {
+                              <span class="flex items-center">
+                                <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Sending...
+                              </span>
+                            } @else {
+                              <span>Send Reply</span>
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @else {
+      <div class="flex items-center justify-center py-12">
+        <div class="text-center">
+          <div class="text-5xl mb-3">📭</div>
+          <p class="text-lg font-medium text-secondary mb-1">No reviews found</p>
+          <p class="text-secondary/60 text-sm">Try adjusting your filters</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

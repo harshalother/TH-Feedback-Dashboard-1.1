@@ -1,0 +1,41 @@
+/*
+  Analytics Component Styles
+
+  Purpose: Custom animations and transitions for analytics visualizations
+*/
+
+/* Smooth fade-in for component */
+:host {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab content fade transition */
+[class*="activeTab"] {
+  animation: tabFadeIn 0.2s ease-in;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Heatmap cell hover effect */
+.heatmap-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

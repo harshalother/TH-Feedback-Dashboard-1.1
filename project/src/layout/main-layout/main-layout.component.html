@@ -1,0 +1,150 @@
+<!--
+  Main Layout Template
+
+  Structure: Three-part layout with fixed sidebar, sticky header, and scrollable content
+  The router-outlet is where child components are dynamically inserted based on the active route
+-->
+<div class="flex h-screen bg-surface overflow-hidden">
+
+  <!-- Sidebar Navigation (Left) -->
+  <!--
+    Why fixed width: Consistent sidebar size across all pages
+    Why h-screen: Full height of viewport
+    Why secondary color: Dark coffee (#4B3228) per brand guidelines
+  -->
+  <aside class="w-64 bg-secondary text-white flex flex-col">
+
+    <!-- Brand Logo / App Title -->
+    <div class="p-6 border-b border-white/10">
+      <h1 class="text-xl font-bold text-white">
+        Feedback Analytics
+      </h1>
+      <p class="text-white/70 text-sm mt-1">Tim Hortons</p>
+    </div>
+
+    <!-- Navigation Links -->
+    <!--
+      Why nav element: Semantic HTML for navigation
+      Why flex-1: Takes up remaining space, pushing logout to bottom
+    -->
+    <nav class="flex-1 py-6 px-3 overflow-y-auto">
+      <ul class="space-y-2">
+        @for (item of navigationItems; track item.path) {
+          <li>
+            <!--
+              routerLink: Angular directive for navigation without page reload
+              routerLinkActive: Automatically adds CSS class when route is active
+              Why [routerLinkActiveOptions]: Configures how active state is determined
+            -->
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="active-link"
+              [routerLinkActiveOptions]="{ exact: false }"
+              class="flex items-center px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200"
+            >
+              <!-- Icon -->
+              <span class="text-xl mr-3">{{ item.icon }}</span>
+              <!-- Label -->
+              <span class="font-medium">{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <!-- Logout Button (Bottom of Sidebar) -->
+    <div class="p-4 border-t border-white/10">
+      <button
+        (click)="logout()"
+        class="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 text-white font-medium"
+      >
+        <span class="mr-2">🚪</span>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area (Right) -->
+  <!--
+    Why flex-1: Takes remaining horizontal space
+    Why flex flex-col: Stacks header and content vertically
+  -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Header (Top) -->
+    <!--
+      Why sticky: Stays visible when content scrolls
+      Why shadow-sm: Subtle elevation for visual separation
+    -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="px-6 py-4 flex items-center justify-between">
+
+        <!-- Left: Global Store Filter -->
+        <div class="flex items-center space-x-4">
+          <label for="store-select" class="text-sm font-medium text-secondary">
+            Store:
+          </label>
+          <!--
+            Store Selection Dropdown
+            Why (change): Updates global filter state
+            This would typically filter all data in child components
+          -->
+          <select
+            id="store-select"
+            (change)="onStoreChange($event)"
+            class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          >
+            @for (store of stores; track store) {
+              <option [value]="store">{{ store }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Right: User Profile -->
+        @if (user) {
+          <div class="flex items-center space-x-3">
+            <!-- User Info -->
+            <div class="text-right">
+              <p class="text-sm font-medium text-secondary">{{ user.name }}</p>
+              <p class="text-xs text-secondary/60">{{ user.role }}</p>
+            </div>
+            <!-- User Avatar -->
+            <!--
+              Why inline styles: Dynamic background color based on user initials
+              Production would use actual profile images
+            -->
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+              {{ user.name.charAt(0) }}
+            </div>
+          </div>
+        }
+      </div>
+    </header>
+
+    <!-- Content Area with Router Outlet -->
+    <!--
+      Why router-outlet:
+      This is Angular's dynamic component placeholder. When you navigate to a route,
+      Angular automatically:
+      1. Determines which component matches the current route
+      2. Destroys the previous component (if any)
+      3. Creates and inserts the new component here
+      4. Maintains this layout structure around the changing content
+
+      Example flow:
+      - User clicks "Dashboard" → DashboardComponent renders here
+      - User clicks "Reviews" → ReviewsComponent replaces DashboardComponent here
+      - The sidebar and header remain unchanged throughout
+
+      Why overflow-auto: Allows content to scroll independently while header/sidebar stay fixed
+      Why p-6: Consistent padding around all page content
+    -->
+    <main class="flex-1 overflow-auto p-6">
+      <!--
+        Router Outlet Directive
+        This empty element becomes the insertion point for routed components
+      -->
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

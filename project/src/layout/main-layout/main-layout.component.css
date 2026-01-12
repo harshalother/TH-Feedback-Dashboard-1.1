@@ -1,0 +1,50 @@
+/*
+  Main Layout Styles
+
+  Purpose: Custom styles for the layout component
+  Most styling uses Tailwind, but active states need custom styles
+*/
+
+/* Active Navigation Link Style */
+/*
+  Applied automatically by routerLinkActive directive
+  Brand red background with rounded corners per requirements
+*/
+.active-link {
+  background-color: #C8102E !important;
+  color: white !important;
+}
+
+/* Smooth transitions for navigation */
+.active-link {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover effect for non-active links */
+a:not(.active-link):hover {
+  transform: translateX(2px);
+}
+
+/* Custom scrollbar for sidebar navigation */
+aside nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside nav::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+aside nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+aside nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Header shadow with warm coffee tone */
+header {
+  box-shadow: 0 1px 3px rgba(75, 50, 40, 0.1);
+}
